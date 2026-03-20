@@ -1,46 +1,39 @@
-# Q-Energic: Pan-African Microgrid Optimization using Variational Neural Annealing
+# Q‑Enerqic: Quantum‑Inspired Microgrid Optimization using Variational Neural Annealing
 
-This repository contains the code and figures for the paper:
+This repository contains the code and figures for two papers that apply **Variational Neural Annealing (VNA)** to microgrid site selection:
 
-**Pan-African Microgrid Optimization: Zeta-Regularized Decoherence and Variational Neural Annealing for Continental Electrification** Yousra Farhani, Helarie Rose Medie Fah, Ahmed Samir, Marzuq Yussif Etsie Adam, Kenedy Mwendwa Mulila, Abdulmajid Osumanu  
-*GECCO '26 Companion*, July 2026.
+1. **Pan‑African Microgrid Optimization** – continental‑scale formulation with 5,000 candidate clusters.  
+2. **Ethiopian NEP 2.0 Case Study** – a 50‑site national electrification problem, including the “Price of Equity” analysis.
 
-The work formulates the continental microgrid site-selection problem as a Quadratic Unconstrained Binary Optimization (QUBO) and solves it with **Variational Neural Annealing (VNA)** — a physics-inspired method that uses an autoregressive neural network to mimic quantum tunneling and escape local minima. The framework leverages Riemann zeta regularization to handle divergences in the quantum decoherence process.
+The VNA framework uses an autoregressive neural network to simulate quantum annealing, escaping local minima and achieving ground states that classical heuristics cannot reach.
 
 ---
 
 ## 📚 Theoretical Background
 
 ### From Ising Models to QUBO
-The Ising model is a cornerstone of statistical physics: spins $\sigma_i = \pm 1$ interact via couplings $J_{ij}$ and external fields $h_i$:
+The Ising model is the language of both classical optimization and quantum computing:
 
-$$H = -\sum_{\langle i,j\rangle} J_{ij} \sigma_i \sigma_j - \sum_i h_i \sigma_i$$
+$$ H = -\sum_{\langle i,j\rangle} J_{ij} \sigma_i \sigma_j - \sum_i h_i \sigma_i $$
 
-Finding the ground state of an Ising Hamiltonian is equivalent to solving a **QUBO** problem:
+A QUBO problem is an equivalent formulation with binary variables $x_i \in \{0,1\}$:
 
-$$E(\mathbf{x}) = \mathbf{x}^T Q \mathbf{x}, \quad x_i \in \{0,1\}$$
+$$ E(\mathbf{x}) = \mathbf{x}^T Q \mathbf{x} $$
 
-where $x_i = (\sigma_i+1)/2$. Many real-world optimization problems (including microgrid placement) can be encoded as QUBO by converting constraints into quadratic penalty terms.
-
-### Quantum Annealing & Decoherence
-In quantum annealing, we start with an easy Hamiltonian (e.g., a transverse field) and slowly evolve to the problem Hamiltonian. Ideally, the system remains in the instantaneous ground state, ending in the solution. However, **decoherence** — interaction with the environment — causes loss of quantum information and can trap the system in metastable states.
-
-We model this decoherence using **Riemann zeta regularization**, which tames divergences in the vacuum expectation value of the quantum field and defines the Heisenberg cut where the wavefunction collapses to a classical outcome:
-
-$$\ln \det \mathcal{D} = -\zeta'(0)$$
+Constraints become quadratic penalties.
 
 ### Variational Neural Annealing (VNA)
-Instead of relying on physical qubits, we simulate the annealing process classically with a neural network that learns a probability distribution $p_\theta(x)$ over binary configurations. The network minimizes the **variational free energy**:
+VNA replaces the physical quantum annealing process with an autoregressive neural network $p_\theta(x)$. It minimizes the variational free energy:
 
-$$F(\theta,\beta) = \mathbb{E}_{x\sim p_\theta}[E(x)] - \frac{1}{\beta} H(p_\theta)$$
+$$ F(\theta,\beta) = \mathbb{E}_{x\sim p_\theta}[E(x)] - \frac{1}{\beta} H(p_\theta) $$
 
-As the inverse temperature $\beta$ increases, the entropy term vanishes and the network converges to the ground state. This approach effectively borrows quantum tunneling ideas to escape local minima, without requiring quantum hardware.
+As $\beta \to \infty$, the network converges to the ground state. The RNN structure enables exact sampling and power‑law convergence, bypassing the logarithmic plateaus of simulated annealing.
 
 ---
 
-## 🔬 Problem Formulation
+## 🔬 Pan‑African Microgrid Optimization
 
-We consider a set of $N$ candidate microgrid sites, each with:
+We consider a set of 5,000 candidate microgrid clusters across Africa. Each site has:
 - construction cost $C_i$,
 - population served $P_i$,
 - energy generation capacity $E_i$ (TWh/day).
@@ -50,39 +43,72 @@ Given a total budget $B$ and a target population $M$, the QUBO objective is:
 $$
 \begin{aligned}
 Q(x) = &\sum_i C_i x_i - \alpha \sum_i P_i x_i - \gamma \sum_i E_i x_i \\
-&+ \mu \left(\sum_i C_i x_i - B\right)^2 + \lambda \left(M - \sum_i P_i x_i\right)^2
+&+ \theta \left(\sum_i C_i x_i - B\right)^2 + \lambda \left(M - \sum_i P_i x_i\right)^2
 \end{aligned}
 $$
 
-Here $x_i \in \{0,1\}$ indicates whether site $i$ is selected. The linear terms represent the objective cost function (minimizing financial cost while maximizing population and energy yield), while quadratic penalties enforce the budget and coverage constraints.
-
----
-
-## 📊 Results
-
-Using a synthetic dataset of 5,000 candidate clusters across Africa, we compare VNA against classical heuristics and standard Variational Quantum Annealing (VQA). With a budget constraint of \$50 billion, VNA achieves:
-
+### Results
+With a budget constraint of \$50 billion, VNA achieves:
 - **475 million** people covered
 - **1.95 TWh/day** energy capacity
 - **\$43.5 billion** total cost
 
-These results dominate the Pareto frontier, demonstrating that VNA escapes local minima and finds a near-optimal solution.
+These results dominate the Pareto frontier, demonstrating that VNA escapes local minima and finds a near‑optimal solution.
+
+---
+
+## 🇪🇹 Ethiopian NEP 2.0 Case Study
+
+We applied VNA to the Ethiopian National Electrification Program (NEP 2.0) with 50 candidate microgrid sites. The QUBO includes:
+
+- Normalized cost $\tilde{C}_i$, population $\tilde{P}_i$, energy demand $\tilde{E}_i$.
+- Quadratic penalties for budget and population targets.
+- A **regional scatter penalty** $\lambda_R \mathcal{R}_{ij}$ that penalizes selecting multiple sites from the same region, enforcing geographic equity.
+
+### Key Findings
+
+- **Classical heuristics** (greedy, simulated annealing, tabu search, D‑Wave Qbsolv, QAOA) all collapse into the **Oromia Sinkhole** – a cost‑efficiency trap that violates the national mandate for regional representation.
+- **VNA** escapes this trap, achieving a ground state with **8,800 citizens served**, **100% regional coverage**, at a cost of **$1.34M**.
+- The **“Price of Equity”** is quantified: the difference between the baseline greedy solution ($0.9M, 6,800 people, 1/4 regions) and the VNA solution ($1.34M, 8,800 people, 4/4 regions) is **$429,000** – the exact fiscal expansion needed to meet equity goals.
+
+### Benchmarking Table
+
+| Solver | Cost (USD) | Budget % | Population | Equity Mandate | Convergence Dynamics |
+|--------|------------|----------|------------|----------------|----------------------|
+| NAR Greedy | $890,500 | 98.9% | 6,800 | Failed (Sinkhole) | N/A (Deterministic) |
+| Sim. Annealing | $920,500 | 102.3% | 6,920 | Failed (Over Budget) | Logarithmic Decay |
+| Tabu Search | $904,000 | 100.4% | 6,100 | Failed (Over Budget) | Memory‑Heuristic |
+| D‑Wave Qbsolv | $932,500 | 103.6% | 6,950 | Failed (Over Budget) | SQA Logarithmic |
+| QAOA (IBM) | $908,000 | 100.9% | 6,130 | Failed (Over Budget) | Gate‑Model NISQ |
+| **VNA (Ours)** | **$1,341,000** | **149.0%** | **8,800** | **Achieved (Global)** | **Power‑Law Decay** |
 
 ---
 
 ## 🖼️ Figures
 
-All figures are generated by the script `generate_figures.py` and saved as PNG files.
+All figures are generated by Python scripts and saved as PNG files.
+
+### Pan‑African Figures (`generate_figures.py`)
 
 | Figure | Description |
 |--------|-------------|
 | `fig1_qubo.png` | Microgrid site selection as QUBO with penalty terms. |
-| `fig2_heisenberg.png` | Zeta-regularized decoherence and the Heisenberg cut. |
+| `fig2_heisenberg.png` | Zeta‑regularized decoherence and the Heisenberg cut. |
 | `fig3_vna.png` | Variational Neural Annealing architecture. |
 | `fig4_annealing.png` | Annealing schedule: from quantum to classical. |
 | `fig5_landscape.png` | Free energy landscape smoothing local minima. |
 | `fig6_pareto.png` | Pareto comparison: VNA vs. classical heuristics vs. VQA. |
 | `fig7_plow.png` | The neural network acting as a “topological plow”. |
+
+### Ethiopian Case Study Figures (`generate_ethiopia_figures.py`)
+
+| Figure | Description |
+|--------|-------------|
+| `eth_fig1_workflow.png` | Q‑Enerqic workflow architecture (computational flow). |
+| `eth_fig2_rnn_architecture.png` | Internal autoregressive architecture of the VNA engine. |
+| `eth_fig3_geospatial_map.png` | Geospatial map contrasting the greedy trap vs. VNA equity solution. |
+| `eth_fig4_pareto_frontier.png` | Cost‑equity Pareto frontier derived from phased sweeps. |
+| `eth_fig5_convergence.png` | Power‑law energy decay of VNA vs. logarithmic plateaus of classical methods. |
 
 ---
 
@@ -93,37 +119,57 @@ All figures are generated by the script `generate_figures.py` and saved as PNG f
 - Python 3.7+
 - `numpy`
 - `matplotlib`
+- `pandas` (for tables, optional)
 
 Install with:
 
 ```bash
-pip install numpy matplotlib
+pip install numpy matplotlib pandas
 ```
 
-### Generate Figures
-
-Run the script:
+### Generate Pan‑African Figures
 
 ```bash
 python generate_figures.py
 ```
 
-This will create the seven PNG images in the current directory.
+### Generate Ethiopian Case Study Figures
 
-### Reproduce Paper Results
+```bash
+python generate_ethiopia_figures.py
+```
 
-The full dataset and training code are not included in this repository for space reasons, but the methodology is fully described in the paper. Contact the authors for more details.
+Both scripts will create the PNG files in the current directory.
+
+### Reproduce Full Results
+
+The complete training logs and optimization trajectories for the Ethiopian case study are available in the accompanying Google Colab notebook:  
+[Q‑Enerqic VNA Implementation on Colab](https://colab.research.google.com/...)
+
+*Note:* The link will be provided upon publication; for now, the code and data are contained in the `Variational_Neural_Annealing.zip` archive in this repository.
 
 ---
 
 ## 📄 Citation
 
-If you use this work in your research, please cite:
+If you use this work in your research, please cite the appropriate paper:
 
+**Pan‑African work**:
 ```bibtex
 @inproceedings{farhani2026pan,
   title={Pan-African Microgrid Optimization: Zeta-Regularized Decoherence and Variational Neural Annealing for Continental Electrification},
   author={Farhani, Yousra and Fah, Helarie Rose Medie and Samir, Ahmed and Adam, Marzuq Yussif Etsie and Mulila, Kenedy Mwendwa and Osumanu, Abdulmajid},
+  booktitle={Genetic and Evolutionary Computation Conference (GECCO '26 Companion)},
+  year={2026},
+  organization={ACM}
+}
+```
+
+**Ethiopian case study**:
+```bibtex
+@inproceedings{farhani2026ethiopia,
+  title={QUBO Models for Energy Planning: Quantum-Inspired Microgrid Optimization through Variational Neural Annealing},
+  author={Farhani, Yousra and Fah, Helarie Rose Medie and Samir, Ahmed and Adam, Marzuq Yussif Etsie and Mulila, Kenedy Mwendwa and Frimpong, Theophilus and Osumanu, Abdulmajid},
   booktitle={Genetic and Evolutionary Computation Conference (GECCO '26 Companion)},
   year={2026},
   organization={ACM}
@@ -145,9 +191,9 @@ This project is made available for academic and research purposes. Please contac
 - Ahmed Samir  
 - Marzuq Yussif Etsie Adam  
 - Kenedy Mwendwa Mulila  
+- Theophilus Frimpong  
 - Abdulmajid Osumanu  
 
 ---
 
 For questions or collaborations, please open an issue or contact the corresponding authors.
-```
