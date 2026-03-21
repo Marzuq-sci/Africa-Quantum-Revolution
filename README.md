@@ -1,4 +1,4 @@
-# Q‑Enerqic: Quantum‑Inspired Microgrid Optimization using Variational Neural Annealing
+# Q‑Energic: Quantum‑Inspired Microgrid Optimization using Variational Neural Annealing
 
 This repository contains the code and figures for two papers that apply **Variational Neural Annealing (VNA)** to microgrid site selection:
 
